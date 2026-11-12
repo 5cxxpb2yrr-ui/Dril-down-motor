@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LifeOS Manual Explorer</title>
+<style>
+:root{--bg:#14171c;--panel:#1d2128;--panel2:#262b34;--line:#323844;--tx:#eef0f3;--mut:#9aa3b2;--or:#ff8a1f;--or2:#ffb066;--paper:#fff;--ink:#1b1e24;color-scheme:dark}
+@media(prefers-color-scheme:light){:root[data-t=auto]{--bg:#f3f4f6;--panel:#fff;--panel2:#eef0f3;--line:#d9dde3;--tx:#1b1e24;--mut:#5d6675;color-scheme:light}}
+:root[data-t=light]{--bg:#f3f4f6;--panel:#fff;--panel2:#eef0f3;--line:#d9dde3;--tx:#1b1e24;--mut:#5d6675;color-scheme:light}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.logo{font-weight:800;font-size:18px;white-space:nowrap}.logo b{color:var(--or)}
+.search{flex:1;max-width:560px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:var(--tx);font:inherit;min-width:0}
+.sync{font-size:12px;color:var(--mut);white-space:nowrap}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3ccf6e;margin-right:6px}.dot.off{background:var(--or)}
+.shell{flex:1;display:flex;min-height:0}
+nav.side{width:200px;border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:2px;background:var(--panel)}
+nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--mut);text-decoration:none}
+nav a.on{background:var(--or);color:#1b1e24;font-weight:700}
+main{flex:1;overflow:auto;padding:20px;min-width:0}
+h1{margin:0 0 4px;font-size:24px}h2{font-size:15px;margin:22px 0 8px;display:flex;justify-content:space-between}
+.sub{color:var(--mut);margin:0 0 16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}.stat b{font-size:26px;display:block;color:var(--or)}.stat span{color:var(--mut);font-size:13px}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;text-decoration:none;color:inherit;min-height:56px}
+.row:hover{border-color:var(--or)}.row .t{font-weight:650}.row .d{color:var(--mut);font-size:13px}.row .g{flex:1;min-width:0}.row .g>*{overflow:hidden;text-overflow:ellipsis}
+.ic{width:38px;height:38px;border-radius:9px;background:var(--panel2);display:grid;place-items:center;color:var(--or);font-weight:800;flex:none}
+.chev{color:var(--mut)}.star{font-size:20px;color:var(--mut);padding:6px}.star.on{color:var(--or)}
+.crumbs{font-size:13px;color:var(--mut);margin-bottom:12px}.crumbs a{color:var(--or2);text-decoration:none}
+.viewer{display:flex;flex-direction:column;height:100%;margin:-20px}
+.vbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+.vbar .t{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 14px}.btn.p{background:var(--or);color:#1b1e24;border-color:var(--or);font-weight:700}
+.page{flex:1;overflow:auto;background:var(--paper);color:var(--ink);padding:20px}.page iframe,.page embed{width:100%;height:100%;border:0;min-height:70vh}.page img{max-width:100%}
+.page pre{white-space:pre-wrap;font:inherit}.page h1,.page h2,.page h3{color:var(--ink)}
+.vfoot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--line);background:var(--panel);color:var(--mut)}
+mark{background:#ffe14d;color:#000;border-radius:3px}
+.empty{padding:40px 16px;text-align:center;color:var(--mut)}
+nav.tabs{display:none}
+@media(max-width:760px){
+ nav.side,.sync span.l{display:none}main{padding:14px}
+ nav.tabs{display:flex;border-top:1px solid var(--line);background:var(--panel);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+ nav.tabs a{flex:1;flex-direction:column;gap:2px;font-size:11px;padding:6px 2px}
+ .viewer{margin:-14px}
+}
+@media(prefers-reduced-motion:no-preference){main>*{animation:in .2s ease-out}@keyframes in{from{opacity:0}}}
+</style></head><body>
+<header>
+ <div class="logo">LifeOS <b>Manual Explorer</b></div>
+ <input id="q" class="search" type="search" placeholder="Search manuals, procedures, keywords…" aria-label="Search">
+ <div class="sync"><span class="dot" id="dot"></span><span class="l" id="syncl">Connecting…</span></div>
+</header>
+<div class="shell">
+ <nav class="side" id="side"></nav>
+ <main id="main"></main>
+</div>
+<nav class="tabs" id="tabs"></nav>
+<script>
+const $=s=>document.querySelector(s);
+const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+let trees=[],TREES={},T={},OWN={},LEAF={};let favs=LS("mx.favs",[]),recent=LS("mx.recent",[]),files=[],demo=false,synced=null;
+const DEMO=["2006 Scion xB/Repair Manual/Engine Mechanical/EM-01 Engine Removal.md","2006 Scion xB/Repair Manual/Engine Mechanical/EM-02 Engine Installation.md","2006 Scion xB/Repair Manual/Cooling System/CO-01 Water Pump Replacement.md","2019 Subaru Crosstrek/Repair Manual/Cooling/Water Pump.md","2020 Toyota Tacoma/Repair Manual/Brakes/BR-01 Pad Replacement.md","2021 Ford F150/Repair Manual/Electrical/EL-01 Battery Service.md"];
+const nm=s=>s.replace(/\.[^.]+$/,""),ext=s=>(s.match(/\.([^.]+)$/)||[,""])[1].toLowerCase();
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const enc=s=>encodeURIComponent(s);
+const hl=(t,q)=>q?esc(t).replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig"),"<mark>$1</mark>"):esc(t);
+function parse(keys){trees=keys.map(k=>k.key).filter(k=>/\/tree\.json$/.test(k)&&k.split("/").length===3);return keys.filter(k=>!k.key.endsWith("/")&&k.key.split("/").length>=3&&!/\/tree\.json$/.test(k.key)&&k.key.split("/")[1]!=="pages").map(k=>{const p=k.key.split("/");return{key:k.key,vehicle:p[0],manual:p[1],section:p.slice(2,-1).join("/"),file:p[p.length-1],title:nm(p[p.length-1])}})}
+async function load(){
+ try{const r=await fetch("/api/list");if(!r.ok)throw 0;files=parse(await r.json());await loadTrees();synced=new Date();$("#syncl").textContent="Synced "+synced.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}
+ catch{demo=true;files=parse(DEMO.map(key=>({key})));$("#syncl").textContent="Demo data (no bucket)";$("#dot").classList.add("off")}
+ route()}
+const vehicles=()=>[...new Set(files.map(f=>f.vehicle))].sort();
+const byKey=k=>files.find(f=>f.key===k)||(T[k]?pg(k):null);
+function pg(k){const file=k.split("/").pop();return{key:k,vehicle:k.split("/")[0],manual:"pages",section:"",file,title:T[k]||nm(file)}}
+function indexTree(tk,n){const v=tk.split("/")[0];LEAF[tk]=[];(function w(n){for(const c of n.c||[]){if(c.p!==undefined){const k=v+"/pages/"+c.p+".html";T[k]=c.n;OWN[k]=tk;LEAF[tk].push(k)}else w(c)}})(n)}
+async function loadTrees(){await Promise.all(trees.map(async k=>{try{const t=await(await fetch("/api/file?key="+enc(k))).json(),tk=k.split("/").slice(0,2).join("/");TREES[tk]=t;indexTree(tk,t)}catch{}}))}
+const cntN=n=>n.p!==undefined?1:n.c.reduce((a,x)=>a+cntN(x),0);
+const NAV=[["#/","Home","⌂"],["#/vehicles","Vehicles","🚗"],["#/search","Search","⌕"],["#/favs","Favorites","★"]];
+function chrome(){const cur=location.hash||"#/";const h=NAV.map(([h,l,i])=>`<a href="${h}" class="${cur===h||(h!=="#/"&&cur.startsWith(h))?"on":""}"><span>${i}</span>${l}</a>`).join("");$("#side").innerHTML=h;$("#tabs").innerHTML=h}
+function row(f,q){return`<a class="row" href="#/view/${enc(f.key)}"><div class="ic">${esc(f.title.split(" ")[0].slice(0,4))}</div><div class="g"><div class="t">${hl(f.title,q)}</div><div class="d">${esc(f.vehicle)} › ${esc(f.section)}</div></div><button class="star ${favs.includes(f.key)?"on":""}" data-fav="${esc(f.key)}" aria-label="Favorite">${favs.includes(f.key)?"★":"☆"}</button></a>`}
+function route(){
+ chrome();const h=decodeURIComponent((location.hash||"#/").slice(1)),m=$("#main");
+ const [,a,...r]=h.split("/");const rest=r.join("/");
+ if(!a)return home(m);
+ if(a==="vehicles")return vlist(m);
+ if(a==="v")return vehicle(m,rest);
+ if(a==="s")return section(m,rest);
+ if(a==="t")return tview(m,rest);
+ if(a==="view")return view(m,rest);
+ if(a==="favs")return favsView(m);
+ if(a==="search")return search(m,$("#q").value)
+}
+function home(m){
+ const secs=new Set(files.map(f=>f.vehicle+f.manual+f.section)).size;
+ const rec=recent.map(byKey).filter(Boolean).slice(0,5);
+ m.innerHTML=`<h1>Garage Manual Library</h1><p class="sub">Your automotive service information in one place.</p>
+ <div class="stats"><div class="stat"><b>${vehicles().length}</b><span>Vehicles</span></div><div class="stat"><b>${new Set(files.map(f=>f.vehicle+f.manual)).size}</b><span>Manuals</span></div><div class="stat"><b>${files.length}</b><span>Pages</span></div><div class="stat"><b>${favs.length}</b><span>Favorites</span></div><div class="stat"><b>${secs}</b><span>Sections</span></div></div>
+ <h2>Recent</h2><div class="list">${rec.map(f=>row(f)).join("")||'<div class="empty">Pages you open show up here.</div>'}</div>`}
+function vlist(m){m.innerHTML=`<h1>Vehicles</h1><p class="sub">${vehicles().length} in your library</p><div class="list">${vehicles().map(v=>{const n=files.filter(f=>f.vehicle===v);return`<a class="row" href="#/v/${enc(v)}"><div class="ic">🚗</div><div class="g"><div class="t">${esc(v)}</div><div class="d">${new Set(n.map(f=>f.manual)).size} manuals • ${n.length} pages</div></div><span class="chev">›</span></a>`}).join("")}</div>`}
+function vehicle(m,v){const n=files.filter(f=>f.vehicle===v);const tms=Object.keys(TREES).filter(k=>k.split("/")[0]===v);const ms=[...new Set(n.map(f=>f.manual))];
+ m.innerHTML=`<div class="crumbs"><a href="#/vehicles">Vehicles</a> › ${esc(v)}</div><h1>${esc(v)}</h1>`+tms.map(k=>{const t=TREES[k],mn=k.split("/")[1];return`<h2>${esc(mn)}</h2><div class="list"><a class="row" href="#/t/${enc(v)}/${enc(mn)}/"><div class="ic">📚</div><div class="g"><div class="t">${esc(t.title||mn)}</div><div class="d">${t.c.length} categories • ${cntN(t).toLocaleString()} pages</div></div><span class="chev">›</span></a></div>`}).join("")+ms.map(mn=>{const ss=[...new Set(n.filter(f=>f.manual===mn).map(f=>f.section))].sort();return`<h2>${esc(mn)}</h2><div class="list">${ss.map(s=>`<a class="row" href="#/s/${enc(v)}/${enc(mn)}/${enc(s)}"><div class="ic">📁</div><div class="g"><div class="t">${esc(s)}</div><div class="d">${n.filter(f=>f.manual===mn&&f.section===s).length} pages</div></div><span class="chev">›</span></a>`).join("")}</div>`}).join("")}
+function tview(m,p){const [v,mn,ps]=p.split("/"),t=TREES[v+"/"+mn];if(!t){m.innerHTML='<div class="empty">Index not found.</div>';return}
+ const path=ps?ps.split(".").map(Number):[],nodes=[t];try{for(const i of path)nodes.push(nodes.at(-1).c[i])}catch{}
+ const n=nodes.at(-1),b=`#/t/${enc(v)}/${enc(mn)}/`;
+ const cr=[`<a href="${b}">${esc(mn)}</a>`,...path.map((_,k)=>`<a href="${b}${path.slice(0,k+1).join(".")}">${esc(nodes[k+1].n.replace(/^Relays and Modules - /,""))}</a>`)].join(" › ");
+ const up=path.length?b+path.slice(0,-1).join("."):"#/v/"+enc(v);
+ m.innerHTML=`<div class="crumbs"><a href="${up}">‹ Back</a> • ${cr}</div><h1>${esc(path.length?n.n:mn)}</h1><p class="sub">${n.c.length} items • ${cntN(n).toLocaleString()} pages</p><input class="search" id="tf" placeholder="Filter this level…" style="width:100%;max-width:none;margin-bottom:12px"><div class="list" id="tl"></div>`;
+ const draw=q=>{$("#tl").innerHTML=n.c.map((c,i)=>[c,i]).filter(([c])=>!q||c.n.toLowerCase().includes(q)).map(([c,i])=>c.p!==undefined?`<a class="row" href="#/view/${enc(v+"/pages/"+c.p+".html")}"><div class="ic">📄</div><div class="g"><div class="t">${esc(c.n)}</div><div class="d">Service page</div></div><span class="chev">#${esc(c.p)}</span></a>`:`<a class="row" href="${b}${[...path,i].join(".")}"><div class="ic">📁</div><div class="g"><div class="t">${esc(c.n)}</div><div class="d">${c.c.length} items</div></div><span class="d">${cntN(c).toLocaleString()}</span><span class="chev">›</span></a>`).join("")||'<div class="empty">Nothing matches.</div>'};
+ draw("");$("#tf").oninput=e=>draw(e.target.value.toLowerCase())}
+function section(m,p){const [v,mn,...s]=p.split("/").map(decodeURIComponent);const sec=s.join("/");
+ const n=files.filter(f=>f.vehicle===v&&f.manual===mn&&f.section===sec).sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true}));
+ m.innerHTML=`<div class="crumbs"><a href="#/v/${enc(v)}">${esc(v)}</a> › ${esc(mn)}</div><h1>${esc(sec)}</h1><p class="sub">${n.length} pages</p><div class="list">${n.map(f=>row(f)).join("")}</div>`}
+function favsView(m){const n=favs.map(byKey).filter(Boolean);m.innerHTML=`<h1>Favorites</h1><div class="list" style="margin-top:14px">${n.map(f=>row(f)).join("")||'<div class="empty">Tap ☆ on any page to pin it here.</div>'}</div>`}
+function search(m,q){q=(q||"").trim().toLowerCase();const n=q?files.filter(f=>(f.title+f.vehicle+f.section+f.manual).toLowerCase().includes(q)):[];
+ m.innerHTML=`<h1>Search</h1><p class="sub">${q?n.length+" results for “"+esc(q)+"”":"Type above to search titles, sections and vehicles."}</p><div class="list">${n.map(f=>row(f,q)).join("")}</div>`}
+async function view(m,key){
+ const f=byKey(key);if(!f){m.innerHTML='<div class="empty">Page not found.</div>';return}
+ recent=[key,...recent.filter(k=>k!==key)].slice(0,20);save("mx.recent",recent);
+ const sib=OWN[key]?LEAF[OWN[key]].map(k=>({key:k})):files.filter(x=>x.vehicle===f.vehicle&&x.manual===f.manual&&x.section===f.section).sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true}));
+ const i=sib.findIndex(x=>x.key===key),url="/api/file?key="+enc(key),e=ext(f.file);
+ const go=j=>sib[j]?`href="#/view/${enc(sib[j].key)}"`:"";
+ m.innerHTML=`<div class="viewer"><div class="vbar"><a class="btn" href="${OWN[key]?"#/t/"+enc(OWN[key].split("/")[0])+"/"+enc(OWN[key].split("/")[1]):"#/s/"+enc(f.vehicle)+"/"+enc(f.manual)+"/"+enc(f.section)}">‹</a><div class="t">${esc(f.title)}</div><button class="star ${favs.includes(key)?"on":""}" data-fav="${esc(key)}">${favs.includes(key)?"★":"☆"}</button><a class="btn" href="${demo?"#":url}" target="_blank">Open</a></div>
+ <div class="page" id="pg">Loading…</div>
+ <div class="vfoot"><a class="btn" ${go(i-1)}>‹ Previous</a><span>Page ${i+1} of ${sib.length}</span><a class="btn p" ${go(i+1)}>Next ›</a></div></div>`;
+ const pg=$("#pg");
+ if(demo){pg.innerHTML=`<h1>${esc(f.title)}</h1><p>Demo mode — connect your R2 bucket to see real content.</p>`;return}
+ if(e==="pdf")pg.innerHTML=`<iframe src="${url}"></iframe>`;
+ else if(["png","jpg","jpeg","webp","gif","svg"].includes(e))pg.innerHTML=`<img src="${url}" alt="">`;
+ else if(e==="html"||e==="htm")pg.innerHTML=`<iframe sandbox src="${url}"></iframe>`;
+ else try{const t=await (await fetch(url)).text();pg.innerHTML=e==="md"?md(t):`<pre>${esc(t)}</pre>`}catch{pg.textContent="Could not load this page."}
+}
+function md(t){return esc(t).replace(/^### (.*)$/gm,"<h3>$1</h3>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^\d+\. (.*)$/gm,"<li>$1</li>").replace(/^[-*] (.*)$/gm,"<li>$1</li>").replace(/\n{2,}/g,"<br><br>")}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-fav]");if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.fav;favs=favs.includes(k)?favs.filter(x=>x!==k):[k,...favs];save("mx.favs",favs);route()},true);
+$("#q").addEventListener("input",()=>{if(!location.hash.startsWith("#/search"))location.hash="#/search";else route()});
+addEventListener("hashchange",route);load();
+</script></body></html>
