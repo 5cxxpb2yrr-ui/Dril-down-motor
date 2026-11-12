@@ -1,0 +1,36 @@
+name: Unpack manual explorer
+
+on:
+  push:
+    branches: [main]
+    paths: ['lifeos-manual-explorer.zip']
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    # Don't react to our own commits
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip into repo root
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp -d)
+          unzip -q lifeos-manual-explorer.zip -d "$tmp"
+          src="$tmp"
+          [ -d "$tmp/manual-explorer" ] && src="$tmp/manual-explorer"
+          rsync -a "$src"/ ./
+          rm lifeos-manual-explorer.zip
+
+      - name: Commit unpacked files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Unpack lifeos-manual-explorer.zip [skip ci]"
+          git push
