@@ -98,10 +98,10 @@ function route(){
  if(a==="search")return search(m,$("#q").value)
 }
 function home(m){
- const secs=new Set(files.map(f=>f.vehicle+f.manual+f.section)).size;
+ const manuals=new Set([...files.map(f=>f.vehicle+"/"+f.manual),...Object.keys(TREES)]).size;\n const secs=new Set([...files.map(f=>f.vehicle+"/"+f.manual+"/"+f.section),...Object.entries(TREES).flatMap(([k,t])=>t.c.map(c=>k+"/"+c.n))]).size;
  const rec=recent.map(byKey).filter(Boolean).slice(0,5);
  m.innerHTML=`<h1>Garage Manual Library</h1><p class="sub">Your automotive service information in one place.</p>
- <div class="stats"><div class="stat"><b>${vehicles().length}</b><span>Vehicles</span></div><div class="stat"><b>${new Set(files.map(f=>f.vehicle+f.manual)).size}</b><span>Manuals</span></div><div class="stat"><b>${files.length+Object.values(LEAF).reduce((n,p)=>n+p.length,0)}</b><span>Pages indexed</span></div><div class="stat"><b>${favs.length}</b><span>Favorites</span></div><div class="stat"><b>${secs}</b><span>Sections</span></div></div>
+ <div class="stats"><div class="stat"><b>${vehicles().length}</b><span>Vehicles</span></div><div class="stat"><b>${manuals}</b><span>Manuals</span></div><div class="stat"><b>${files.length+Object.values(LEAF).reduce((n,p)=>n+p.length,0)}</b><span>Pages indexed</span></div><div class="stat"><b>${favs.length}</b><span>Favorites</span></div><div class="stat"><b>${secs}</b><span>Sections</span></div></div>
  <h2>Recent</h2><div class="list">${rec.map(f=>row(f)).join("")||'<div class="empty">Pages you open show up here.</div>'}</div>`}
 function vlist(m){m.innerHTML=`<h1>Vehicles</h1><p class="sub">${vehicles().length} in your library</p><div class="list">${vehicles().map(v=>{const n=files.filter(f=>f.vehicle===v),manualCount=new Set([...treeKeysForVehicle(v).map(k=>k.split("/")[1]),...n.map(f=>f.manual)]).size;return`<a class="row" href="#/v/${enc(v)}"><div class="ic">🚗</div><div class="g"><div class="t">${esc(v)}</div><div class="d">${manualCount} manuals • ${vehiclePages(v).toLocaleString()} indexed pages</div></div><span class="chev">›</span></a>`}).join("")}</div>`}
 function vehicle(m,v){const n=files.filter(f=>f.vehicle===v);const tms=Object.keys(TREES).filter(k=>k.split("/")[0]===v);const ms=[...new Set(n.map(f=>f.manual))];
